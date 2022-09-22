@@ -20,7 +20,6 @@ import iwfm as iwfm
 import re
 import os
 from shapely.geometry import Point, Polygon
-ghhs
 
 
 class iwfm_model:
