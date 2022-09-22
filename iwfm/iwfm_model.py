@@ -139,15 +139,15 @@ class iwfm_model:
 
         # -- read input file names and create a dictionary 
         self.sim_files_dict = {}
-        preout = iwfm.get_path(sim_lines[line_index].split()[0])  
+        preout = iwfm.file_get_path(sim_lines[line_index].split()[0])  
         self.sim_files_dict['preout'] = preout
 
         line_index = iwfm.skip_ahead(line_index + 1, sim_lines, 0)
-        gw_file = iwfm.get_path(sim_lines[line_index].split()[0]) 
+        gw_file = iwfm.file_get_path(sim_lines[line_index].split()[0]) 
         self.sim_files_dict['gw'] = gw_file
 
         line_index = iwfm.skip_ahead(line_index + 1, sim_lines, 0)
-        stream_file = iwfm.get_path(sim_lines[line_index].split()[0])  
+        stream_file = iwfm.file_get_path(sim_lines[line_index].split()[0])  
         self.sim_files_dict['stream'] = stream_file
 
         line_index = iwfm.skip_ahead(line_index + 1, sim_lines, 0)  
@@ -155,27 +155,27 @@ class iwfm_model:
         if temp[0] == '/':
             lake_file = ''
         else:
-            lake_file = iwfm.get_path(temp)  
+            lake_file = iwfm.file_get_path(temp)  
         self.sim_files_dict['lake'] = lake_file
 
         line_index = iwfm.skip_ahead(line_index + 1, sim_lines, 0)  
-        rz_file = iwfm.get_path(sim_lines[line_index].split()[0])  
+        rz_file = iwfm.file_get_path(sim_lines[line_index].split()[0])  
         self.sim_files_dict['rootzone'] = rz_file
 
         line_index = iwfm.skip_ahead(line_index + 1, sim_lines, 0) 
-        sw_file = iwfm.get_path(sim_lines[line_index].split()[0])
+        sw_file = iwfm.file_get_path(sim_lines[line_index].split()[0])
         self.sim_files_dict['smallwatershed'] = sw_file
 
         line_index = iwfm.skip_ahead(line_index + 1, sim_lines, 0)  
-        us_file = iwfm.get_path(sim_lines[line_index].split()[0])
+        us_file = iwfm.file_get_path(sim_lines[line_index].split()[0])
         self.sim_files_dict['unsat'] = us_file
 
         line_index = iwfm.skip_ahead(line_index + 1, sim_lines, 0) 
-        if_file = iwfm.get_path(sim_lines[line_index].split()[0])
+        if_file = iwfm.file_get_path(sim_lines[line_index].split()[0])
         self.sim_files_dict['irrfrac'] = if_file
 
         line_index = iwfm.skip_ahead(line_index + 1, sim_lines, 0)  
-        sa_file = iwfm.get_path(sim_lines[line_index].split()[0])
+        sa_file = iwfm.file_get_path(sim_lines[line_index].split()[0])
         self.sim_files_dict['supplyadj'] = sa_file
 
         line_index = iwfm.skip_ahead(line_index + 1, sim_lines, 0)  
@@ -183,7 +183,7 @@ class iwfm_model:
         self.sim_files_dict['precip'] = pc_file
 
         line_index = iwfm.skip_ahead(line_index + 1, sim_lines, 0)  
-        et_file = iwfm.get_path(sim_lines[line_index].split()[0]) 
+        et_file = iwfm.file_get_path(sim_lines[line_index].split()[0]) 
         self.sim_files_dict['et'] = et_file
 
         # -- starting date
