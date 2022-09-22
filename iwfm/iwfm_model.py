@@ -40,25 +40,25 @@ class iwfm_model:
             print('\n  Reading IWFM Files')
 
         # -- read preprocessor main file
-        currfile = self.pre_folder / self.pre_file
+        currfile = os.path.join(self.pre_folder,self.pre_file)
         if verbose:
             print(f'    IWFM pre-processor file: \t{currfile}')
         self.read_preproc(currfile)
 
         # -- read preprocessor node file
-        currfile = self.pre_folder / self.pre_files_dict['node_file']
+        currfile = os.path.join(self.pre_folder,self.pre_files_dict['node_file'])
         if verbose:
             print(f'    IWFM node file:          \t{currfile}')
         self.read_nodes(currfile)
 
         # -- read preprocessor element file
-        currfile = self.pre_folder / self.pre_files_dict['elem_file']
+        currfile = os.path.join(self.pre_folder,self.pre_files_dict['elem_file'])
         if verbose:
             print(f'    IWFM elements file:      \t{currfile}')
         self.read_elements(currfile)
 
         # -- read preprocessor stratigraphy file
-        currfile = self.pre_folder / self.pre_files_dict['strat_file']
+        currfile = os.path.join(self.pre_folder,self.pre_files_dict['strat_file'])
         if verbose:
             print(f'    IWFM stratigraphy file:  \t{currfile}')
         self.read_strat(currfile)
