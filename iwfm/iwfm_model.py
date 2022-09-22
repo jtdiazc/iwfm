@@ -18,6 +18,7 @@
 
 import iwfm as iwfm
 import re
+import os
 from shapely.geometry import Point, Polygon
 
 
@@ -28,9 +29,11 @@ class iwfm_model:
         self.pre_file = fpath_line.pop(
             len(fpath_line) - 1
         )  # pop preprocessor file name from list
-        self.pre_folder = Path(
-            '/'.join(fpath_line)
-        )  # put back together as Path object for all OSs
+        #self.pre_folder = Path(
+        #    '/'.join(fpath_line)
+        self.pre_folder='//'.join(fpath_line)
+        #)  # put back together as Path object for all OSs
+        
         self.sim_file = sim_file  # simulation file name
 
         if verbose:
