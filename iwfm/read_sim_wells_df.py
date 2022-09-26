@@ -48,4 +48,4 @@ def read_sim_wells_df(gw_file):
     wells_df.columns = (["Name", "ID", "X", "Y", "IOUTHL", "State_Name"])
 
 
-    return wells_df, nouth,GWHYDOUTFL
+    return wells_df, nouth, GWHYDOUTFL

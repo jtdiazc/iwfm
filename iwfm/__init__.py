@@ -101,6 +101,7 @@ from iwfm.wdl_ts_4_wells import wdl_ts_4_wells
 # --- plotting methods --for IWFM output ------------------
 from iwfm.read_obs_smp import read_obs_smp
 from iwfm.read_sim_wells import read_sim_wells
+from iwfm.read_sim_wells_df import read_sim_wells_df
 from iwfm.read_sim_hyds import read_sim_hyds
 from iwfm.hyd_diff import hyd_diff
 from iwfm.gw_plot_draw import gw_plot_draw
