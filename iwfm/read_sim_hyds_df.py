@@ -101,5 +101,7 @@ def read_sim_hyds_df(nhyds, gwhyd_files):
 
             lines_i += 1
 
+    #Let's convert dates to Pandas date format
+    hyd_df["Date"] = pd.to_datetime(gwhyd_sim["TIME"].str[:-6], format="%m/%d/%Y")
 
     return hyd_df
