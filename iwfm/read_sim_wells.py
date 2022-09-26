@@ -45,7 +45,7 @@ def read_sim_wells(gw_file):
 
     #Skip to GWHYDOUTFL
     line_index = iwfm.skip_ahead(line_index, gwhyd_info, 2)
-    GWHYDOUTFL = int(gwhyd_info[line_index].split()[0])
+    GWHYDOUTFL = gwhyd_info[line_index].split()[0]
 
 
     line_index = iwfm.skip_ahead(line_index, gwhyd_info, 1)  # skip to first hydrograph
