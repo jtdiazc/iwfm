@@ -35,6 +35,7 @@ def read_sim_wells(gw_file):
     
     '''
     import iwfm as iwfm
+    import re
 
     well_dict, well_list = {}, []
     gwhyd_info = open(gw_file).read().splitlines()
@@ -50,13 +51,14 @@ def read_sim_wells(gw_file):
 
     line_index = iwfm.skip_ahead(line_index, gwhyd_info, 1)  # skip to first hydrograph
     for i in range(0, nouth):  
-        items, line = [], gwhyd_info[line_index].split()
+        items, line = [], re.split(r'\t+', gwhyd_info[line_index])
         items.append(line[5].upper())  # state well number = key
         items.append(int(line[0]))     # column number in hydrograph file
         items.append(float(line[3]))   # x
         items.append(float(line[4]))   # y
         items.append(int(line[2]))     # model layer
         items.append(line[5].lower())  # well name (state well number)
+        items.append(line[6])          # Comments
         well_dict[items[0]] = items[1:]
         well_list.append(items[0])
         line_index += 1
