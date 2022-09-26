@@ -18,7 +18,7 @@
 
 import pandas as pd
 
-def read_sim_hyds_df(nhyds, gwhyd_files):
+def read_sim_hyds_df(nhyds, gwhyd_files,wells_df):
     ''' read_sim_hyds() - Read simulated values from multiple IWFM output 
         hydrograph files into Pandas dataframe
 
@@ -29,6 +29,8 @@ def read_sim_hyds_df(nhyds, gwhyd_files):
     
     gwhyd_files : list
         list of input file names
+
+    wells_df: Pandas dataframe with wells (output of read_sim_wells_df function)
 
     Returns
     -------
@@ -103,5 +105,7 @@ def read_sim_hyds_df(nhyds, gwhyd_files):
 
     #Let's convert dates to Pandas date format
     hyd_df["Date"] = pd.to_datetime(hyd_df["TIME"].str[:-6], format="%m/%d/%Y")
+
+    hyd_df=hyd_df.merge(wells_df, on='HYDROGRAPH ID', how='right')
 
     return hyd_df
