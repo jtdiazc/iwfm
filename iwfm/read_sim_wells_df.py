@@ -45,7 +45,7 @@ def read_sim_wells_df(gw_file):
     wells_df = wells_df.reset_index()
 
     # Rename columns
-    wells_df.columns = (["Name", "HYDROGRAPH ID", "X", "Y", "IOUTHL", "State_Name"])
+    wells_df.columns = (["Name", "HYDROGRAPH ID", "X", "Y", "IOUTHL", "State_Name","Comment"])
 
 
     return wells_df, nouth, GWHYDOUTFL
