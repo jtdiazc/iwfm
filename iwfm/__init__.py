@@ -67,6 +67,7 @@ from iwfm.new_sim_dict import new_sim_dict
 # -- IWFM simulation files --------------------------------
 from iwfm.iwfm_read_sim import iwfm_read_sim
 from iwfm.simhyds import simhyds
+from iwfm.read_sim_hyds_df import read_sim_hyds_df
 
 # -- IWFM land use methods --------------------------------
 from iwfm.iwfm_adj_crops import iwfm_adj_crops
