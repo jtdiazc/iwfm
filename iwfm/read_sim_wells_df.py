@@ -18,7 +18,7 @@
 
 
 def read_sim_wells_df(gw_file):
-    ''' read_sim_wellsdf() - Read Groundwater.dat file and build a dictionary of
+    ''' read_sim_wells_df() - Read Groundwater.dat file and build a dictionary of
         groundwater hydrograph info and gwhyd_sim columns, and returns
         Pandas dataframe
 
