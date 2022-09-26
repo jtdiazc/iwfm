@@ -86,7 +86,7 @@ def read_sim_hyds_df(nhyds, gwhyd_files):
         #Let's add time
         hyd_df["TIME"]=gwhyd_lines[lines_i].split()[0]
         #Let's add the heads
-        hyd_df["HEAD"]=[float(i) for i in gwhyd_lines[lines_i].split()[1:]]
+        hyd_df["SIM"]=[float(i) for i in gwhyd_lines[lines_i].split()[1:]]
 
         #Advance one line
         lines_i += 1
