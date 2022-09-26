@@ -96,7 +96,7 @@ def read_sim_hyds_df(nhyds, gwhyd_files):
             #Dummy template
             hyd_df_dum=hyd_df_temp.copy()
             hyd_df_dum["TIME"] = gwhyd_lines[lines_i].split()[0]
-            hyd_df_dum["HEAD"] = [float(i) for i in gwhyd_lines[lines_i].split()[1:]]
+            hyd_df_dum["SIM"] = [float(i) for i in gwhyd_lines[lines_i].split()[1:]]
             hyd_df=pd.concat([hyd_df, hyd_df_dum], ignore_index=True)
 
             lines_i += 1
