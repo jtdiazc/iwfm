@@ -53,7 +53,7 @@ def read_sim_wells(gw_file):
     for i in range(0, nouth):  
         items, line = [], re.split(r'\t+', gwhyd_info[line_index])
         #Let's delete the layer identification from the name
-        if line[5].find('_L'+line[2])>0:
+        if line[5].find('_L'+line[2]+line[2])>0:
             line[5]=line[5].replace('_L','')
         items.append(line[5].upper())  # state well number = key
         items.append(int(line[0]))     # column number in hydrograph file
