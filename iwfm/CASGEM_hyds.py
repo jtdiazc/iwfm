@@ -43,7 +43,7 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out):
     gwl = pd.read_csv(gwe_path)
 
     #Let's find wells that are both in CASGEM and the IWFM model
-    ESJWRM_in_CASGEM = wells_df.Name[wells_df.Name.isin(gwl.SWN)].reset_index(drop=True)
+    ESJWRM_in_CASGEM = wells_df.Name[wells_df.Name.isin(gwl.SWN)|(wells_df.Name.isin(gwl.WELL_NAME ))].reset_index(drop=True)
 
     #Let's convert dates of gwl to Pandas format
     gwl["Date"]=pd.to_datetime(gwl.MSMT_DATE.str[:-11], format="%Y/%m/%d")
