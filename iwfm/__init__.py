@@ -114,6 +114,7 @@ from iwfm.write_smp import write_smp
 from iwfm.draw_plot import draw_plot
 from iwfm.read_obs import read_obs
 from iwfm.pdf_combine import pdf_combine
+from iwfm.CASGEM_hyds import CASGEM_hyds
 
 # -- post-process headall.out file ------------------------
 from iwfm.headall_read import headall_read
