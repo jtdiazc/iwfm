@@ -51,7 +51,7 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out):
     #Let's loop through wells for which we have both simulations and observations
     for well in ESJWRM_in_CASGEM:
         #Let's plot hydrographs
-        ax = gwl[(gwl.SWN==well)&
+        ax = gwl[((gwl.SWN==well)|(gwl.WELL_NAME==well))&
                  (gwl.Date>=min(gwhyd_sim.Date))&
                  (gwl.Date<=max(gwhyd_sim.Date))].plot(x='Date',
                                                        y='WSE',
