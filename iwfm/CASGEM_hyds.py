@@ -18,6 +18,7 @@
 
 import pandas as pd
 import os
+import numpy as np
 
 
 def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out):
@@ -35,7 +36,12 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out):
 
     Returns
     -------
-    Doesn't return anything, it just plots hydrographs and save them into a file
+    IWFM_in_CASGEM: Wells in the IWFM model which are also in the CASGEM csv file
+
+    IWFM_not_in_CASGEM: Wells in the IWFM model which are not in the CASGEM csv file
+
+    CASGEM_not_in_IWFM: Wells in the CASGEM csv file which are not in the IWFM model
+    
 
     '''
 
@@ -43,13 +49,21 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out):
     gwl = pd.read_csv(gwe_path)
 
     #Let's find wells that are both in CASGEM and the IWFM model
-    ESJWRM_in_CASGEM = wells_df.Name[wells_df.Name.isin(gwl.SWN)|(wells_df.Name.isin(gwl.WELL_NAME ))].reset_index(drop=True)
+    IWFM_in_CASGEM = wells_df.Name[wells_df.Name.isin(gwl.SWN)|(wells_df.Name.isin(gwl.WELL_NAME ))].reset_index(drop=True)
+
+    # Let's find wells that are in the IWFM model, but not in CASGEM
+
+    IWFM_not_in_CASGEM=wells_df.Name[~wells_df.Name.isin(IWFM_in_CASGEM)]
+
+    #Let's find wells that are in CASGEM, but not in the IWFM model
+    CASGEM_not_in_IWFM=gwl.SWN[~gwl.SWN.isin(IWFM_in_CASGEM)].dropna().append(gwl.WELL_NAME[~gwl.WELL_NAME.isin(IWFM_in_CASGEM)]).unique()
+    
 
     #Let's convert dates of gwl to Pandas format
     gwl["Date"]=pd.to_datetime(gwl.MSMT_DATE.str[:-11], format="%Y/%m/%d")
 
     #Let's loop through wells for which we have both simulations and observations
-    for well in ESJWRM_in_CASGEM:
+    for well in IWFM_in_CASGEM:
         #Let's plot hydrographs
         ax = gwl[((gwl.SWN==well)|(gwl.WELL_NAME==well))&
                  (gwl.Date>=min(gwhyd_sim.Date))&
@@ -62,4 +76,5 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out):
         fig = ax.get_figure()
         fig.savefig(os.path.join(dir_out,well+".png"))
 
+    return IWFM_in_CASGEM, IWFM_not_in_CASGEM, CASGEM_not_in_IWFM
 
