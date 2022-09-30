@@ -39,6 +39,8 @@ def read_sim_wells_df(gw_file):
     '''
     import iwfm as iwfm
     import pandas as pd
+    import geopandas
+
     well_dict, well_list, nouth, GWHYDOUTFL = iwfm.read_sim_wells(gw_file)
     # Let's create a pandas dataframe with the dictionary
     wells_df = pd.DataFrame.from_dict(well_dict, orient='index')
@@ -47,5 +49,8 @@ def read_sim_wells_df(gw_file):
     # Rename columns
     wells_df.columns = (["Name", "HYDROGRAPH ID", "X", "Y", "IOUTHL", "State_Name","Comment"])
 
+    wells_gdf = geopandas.GeoDataFrame(
+    wells_df, geometry=geopandas.points_from_xy(wells_df.X, wells_df.Y))
 
-    return wells_df, nouth, GWHYDOUTFL
+
+    return wells_df, nouth, GWHYDOUTFL, wells_gdf
