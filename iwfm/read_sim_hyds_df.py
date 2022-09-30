@@ -17,6 +17,9 @@
 # -----------------------------------------------------------------------------
 
 import pandas as pd
+import sys
+
+
 
 def read_sim_hyds_df(nhyds, gwhyd_files,wells_df):
     ''' read_sim_hyds() - Read simulated values from multiple IWFM output 
@@ -107,5 +110,7 @@ def read_sim_hyds_df(nhyds, gwhyd_files,wells_df):
     hyd_df["Date"] = pd.to_datetime(hyd_df["TIME"].str[:-6], format="%m/%d/%Y")
 
     hyd_df=hyd_df.merge(wells_df, on='HYDROGRAPH ID', how='right')
+
+
 
     return hyd_df

@@ -52,7 +52,7 @@ def read_sim_wells_df(gw_file,crs=26910):
     wells_df.columns = (["Name", "HYDROGRAPH ID", "X", "Y", "IOUTHL", "State_Name","Comment"])
 
     wells_gdf = geopandas.GeoDataFrame(
-    wells_df, geometry=geopandas.points_from_xy(wells_df.X, wells_df.Y,crs="EPSG:"+str(crs)))
+    wells_df.copy(), geometry=geopandas.points_from_xy(wells_df.X, wells_df.Y,crs="EPSG:"+str(crs)))
 
 
     return wells_df, nouth, GWHYDOUTFL, wells_gdf

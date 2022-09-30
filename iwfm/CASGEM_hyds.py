@@ -19,9 +19,13 @@
 import pandas as pd
 import os
 import numpy as np
+import sys
 
+sys.path.insert(0, r'P:\Projects\5658_NSJWCD\IWRFM\pyemu')
+#Let's add pyemu
+import pyemu
 
-def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out):
+def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out,sim_period):
     ''' read_sim_hyds() - Read simulated values from multiple IWFM output 
         hydrograph files into Pandas dataframe
 
@@ -34,6 +38,9 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out):
 
     dir_out: Directory where hydrographs plots will be saved
 
+    sim_period: Data Frame containing date of start of simulation in the first rown and date of end in the
+    second row. One colunm called Date
+
     Returns
     -------
     IWFM_in_CASGEM: Wells in the IWFM model which are also in the CASGEM csv file
@@ -41,6 +48,8 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out):
     IWFM_not_in_CASGEM: Wells in the IWFM model which are not in the CASGEM csv file
 
     CASGEM_not_in_IWFM: Wells in the CASGEM csv file which are not in the IWFM model
+
+    OBS: observations
     
 
     '''
@@ -110,5 +119,20 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out):
         fig = ax.get_figure()
         fig.savefig(os.path.join(dir_out,well+".png"))
 
-    return IWFM_in_CASGEM, IWFM_not_in_CASGEM, CASGEM_not_in_IWFM
+    #Let's subset now all the observations that will be useful
+    OBS=gwl[gwl.WELL_NAME.isin(IWFM_in_CASGEM)|gwl.SWN.isin(IWFM_in_CASGEM)].copy().reset_index(drop=True)
+
+    #Now, let's filter for records which are in the simulation period of the model
+    OBS=OBS[(OBS.Date >= sim_period.loc[0, 'Date']) & (OBS.Date <= sim_period.loc[1, 'Date'])].reset_index(drop=True)
+
+    #Let's remove rows for which we don't have water level records
+    OBS=OBS[~OBS.WSE.isnull()].reset_index(drop=True)
+
+    #Let's fix names
+    OBS['Name']=""
+    OBS.loc[OBS.WELL_NAME.isin(IWFM_in_CASGEM), "Name"] = OBS.loc[OBS.WELL_NAME.isin(IWFM_in_CASGEM), "WELL_NAME"]
+    OBS.loc[(OBS.SWN.isin(IWFM_in_CASGEM)) & (OBS.Name == ""), "Name"] = OBS.loc[
+        (OBS.SWN.isin(IWFM_in_CASGEM)) & (OBS.Name == ""), "SWN"]
+
+    return IWFM_in_CASGEM, IWFM_not_in_CASGEM, CASGEM_not_in_IWFM, OBS
 
