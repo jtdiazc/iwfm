@@ -26,8 +26,7 @@ import iwfm
 
 def match_obs_sim(OBS,
                   gwhyd_sim,
-                  keys=["Date",
-                        "Name",
+                  keys=["Name",
                         "Month",
                         "Year"]):
     ''' match_obs_sim - matches observations and simulated values for the same month and year

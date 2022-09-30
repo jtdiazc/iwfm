@@ -18,17 +18,19 @@
 
 import pandas as pd
 import iwfm
+import sklearn
 
 
 
 
-def sim_vs_obs(OBS,gwhyd_sim):
+def sim_vs_obs(OBS,gwhyd_sim,dir_out):
     ''' sim_vs_obs() - draws a scatterplot of observed vs simulated values
 
     Parameters
     ----------
     OBS: Pandas dataframe with observations. Date in "Date" column
     gwhyd_sim: Pandas dataframe with simulated time series (output of read_sim_hyds_df)
+    dir_out: Directory where the scatter plot will be saved
 
 
     Returns
@@ -41,7 +43,22 @@ def sim_vs_obs(OBS,gwhyd_sim):
     '''
 
     #First, let's match obs and sim records for same well, month, and year
-    iwfm.match_obs_sim(OBS,gwhyd_sim)
+
+    OBS_SIM=iwfm.match_obs_sim(OBS,gwhyd_sim)
+
+    ax = OBS_SIM.plot.scatter(x='WSE', y='SIM')
+    ax.axline((1, 1), slope=1, color='g')
+
+    #Let's calculate r2
+    r2=sklearn.metrics.r2_score(OBS_SIM['WSE'],OBS_SIM['SIM'])
+
+    ax.text(max(max(OBS_SIM.WSE),max(OBS_SIM.SIM))-15, max(max(OBS_SIM.WSE),max(OBS_SIM.SIM))-5, "r2= "+str(round(r2,2)))
+
+    #Let's set axis limits
+    ax.set_xlim(min(min(OBS_SIM.WSE),min(OBS_SIM.SIM)),max(max(OBS_SIM.WSE),max(OBS_SIM.SIM)))
+    ax.set_ylim(min(min(OBS_SIM.WSE), min(OBS_SIM.SIM)), max(max(OBS_SIM.WSE), max(OBS_SIM.SIM)))
+    fig = ax.get_figure()
+    fig.savefig(os.path.join(dir_out,"OBS_vs_SIM.png"))
 
 
     return

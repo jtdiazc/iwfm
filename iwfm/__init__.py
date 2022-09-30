@@ -97,7 +97,7 @@ from iwfm.write_results import write_results
 from iwfm.simhyd_obs import simhyd_obs
 from iwfm.wdl_meas_stats import wdl_meas_stats
 from iwfm.wdl_ts_4_wells import wdl_ts_4_wells
-from match_obs_sim import match_obs_sim
+from iwfm.match_obs_sim import match_obs_sim
 
 # --- plotting methods --for IWFM output ------------------
 from iwfm.read_obs_smp import read_obs_smp
