@@ -17,7 +17,7 @@
 # -----------------------------------------------------------------------------
 
 
-def read_sim_wells_df(gw_file):
+def read_sim_wells_df(gw_file,crs=26910):
     ''' read_sim_wells_df() - Read Groundwater.dat file and build a dictionary of
         groundwater hydrograph info and gwhyd_sim columns, and returns
         Pandas dataframe
@@ -26,6 +26,8 @@ def read_sim_wells_df(gw_file):
     ----------
     gw_file : str
         IWFM Groundwater.dat file name
+    crs: int
+        EPSG number of reference system usde in the wells coordinates
 
     Returns
     -------
@@ -50,7 +52,7 @@ def read_sim_wells_df(gw_file):
     wells_df.columns = (["Name", "HYDROGRAPH ID", "X", "Y", "IOUTHL", "State_Name","Comment"])
 
     wells_gdf = geopandas.GeoDataFrame(
-    wells_df, geometry=geopandas.points_from_xy(wells_df.X, wells_df.Y))
+    wells_df, geometry=geopandas.points_from_xy(wells_df.X, wells_df.Y,crs="EPSG:"+str(crs)))
 
 
     return wells_df, nouth, GWHYDOUTFL, wells_gdf
