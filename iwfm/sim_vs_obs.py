@@ -18,7 +18,8 @@
 
 import pandas as pd
 import iwfm
-import sklearn
+import sklearn.metrics
+import os
 
 
 
@@ -60,6 +61,25 @@ def sim_vs_obs(OBS,gwhyd_sim,dir_out):
     fig = ax.get_figure()
     fig.savefig(os.path.join(dir_out,"OBS_vs_SIM.png"))
 
+    #Let's also print scatter plots for each well
+
+    for well in OBS_SIM.Name.unique():
+        OBS_SIM_dum=OBS_SIM[OBS_SIM.Name==well].copy()
+        ax = OBS_SIM_dum.plot.scatter(x='WSE', y='SIM',title=well)
+        ax.axline((1, 1), slope=1, color='g')
+
+        # Let's calculate r2
+        r2 = sklearn.metrics.r2_score(OBS_SIM_dum['WSE'], OBS_SIM_dum['SIM'])
+
+        ax.text(max(max(OBS_SIM_dum.WSE), max(OBS_SIM_dum.SIM)) - 15, max(max(OBS_SIM_dum.WSE), max(OBS_SIM_dum.SIM)) - 5,
+                "r2= " + str(round(r2, 2)))
+
+        # Let's set axis limits
+        ax.set_xlim(min(min(OBS_SIM_dum.WSE), min(OBS_SIM_dum.SIM))-5, max(max(OBS_SIM_dum.WSE), max(OBS_SIM_dum.SIM))+5)
+        ax.set_ylim(min(min(OBS_SIM_dum.WSE), min(OBS_SIM_dum.SIM))-5, max(max(OBS_SIM_dum.WSE), max(OBS_SIM_dum.SIM))+5)
+        fig = ax.get_figure()
+        fig.savefig(os.path.join(dir_out, "OBS_vs_SIM_"+well+".png"))
 
     return
+
 
