@@ -52,17 +52,17 @@ def iwfm2shp(main_file, shape_name, epsg=26910, verbose=False):
     if verbose:
         print(f'  Read preprocessor file {main_file}')
 
-    elem_ids, elem_nodes, elem_sub = iwfm.iwfm_read_elements(pre_dict['elem_file']) 
+    elem_ids, elem_nodes, elem_sub = iwfm.iwfm_read_elements(os.path.join(os.path.split(main_file)[0],pre_dict['elem_file']))
     if verbose:
         print(f'  Read nodes of {len(elem_nodes):,} elements from {pre_dict["elem_file"]}')
 
-    node_coords, node_list = iwfm.iwfm_read_nodes(pre_dict['node_file'], factor = 1)
+    node_coords, node_list = iwfm.iwfm_read_nodes(os.path.join(os.path.split(main_file)[0],pre_dict["node_file"]), factor = 1)
     if verbose:
-        print(f'  Read coordinates of {len(node_coords):,} nodes from {pre_dict["node_file"]}')
+        print(f'  Read coordinates of {len(node_coords):,} nodes from {os.path.join(os.path.split(main_file)[0],pre_dict["node_file"])}')
 
-    node_strat, nlayers = iwfm.iwfm_read_strat(pre_dict['strat_file'], node_coords)
+    node_strat, nlayers = iwfm.iwfm_read_strat(os.path.join(os.path.split(main_file)[0],pre_dict["strat_file"]), node_coords)
     if verbose:
-        print(f'  Read stratigraphy for {len(node_strat):,} nodes from {pre_dict["strat_file"]}')
+        print(f'  Read stratigraphy for {len(node_strat):,} nodes from {os.path.join(os.path.split(main_file)[0],pre_dict["strat_file"])}')
 
     if have_lake:
         lake_elems, lakes = iwfm.iwfm_read_lake(pre_dict['lake_file'])  
@@ -76,7 +76,7 @@ def iwfm2shp(main_file, shape_name, epsg=26910, verbose=False):
         if verbose:
             print('  No lakes file')
 
-    reach_list, stnodes_dict, nsnodes, rating_dict = iwfm.iwfm_read_streams(pre_dict['stream_file'])
+    reach_list, stnodes_dict, nsnodes, rating_dict = iwfm.iwfm_read_streams(os.path.join(os.path.split(main_file)[0],pre_dict["stream_file"]))
     if verbose:
         print(f'  Read info for {len(reach_list):,} stream reaches and {nsnodes:,} stream nodes from {pre_dict["stream_file"]}')
 

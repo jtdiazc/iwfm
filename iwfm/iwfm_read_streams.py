@@ -17,7 +17,7 @@
 # -----------------------------------------------------------------------------
 
 
-def iwfm_read_streams(stream_file):
+def iwfm_read_streams(stream_file,format="fixed_width"):
     ''' iwfm_read_streams() - Read an IWFM Stream Geometry file and return
         a list of stream reaches, a dictionary of stream nodes, and the 
         number of stream nodes
@@ -62,7 +62,27 @@ def iwfm_read_streams(stream_file):
     reach_list, snodes_list, nsnodes = [], [], 0
     for i in range(0, nreach):  
         stream_index = iwfm.skip_ahead(stream_index + 1, stream_lines, 0)
-        l = stream_lines[stream_index].split()
+        if format=="fixed_width":
+            l_dum=stream_lines[stream_index].lstrip()
+            #ID
+            ID_dum=stream_lines[stream_index].lstrip()[:stream_lines[stream_index].lstrip().find(" ")]
+            l_dum=l_dum[len(ID_dum):]
+            l=[ID_dum]
+            #NRD
+            l_dum=l_dum.lstrip()
+            NRD_dum=l_dum[:l_dum.find(" ")]
+            l_dum = l_dum[l_dum.find(" "):].lstrip()
+            l.append(NRD_dum)
+            #IDWN
+            IDWN_dum=l_dum[:l_dum.find(" ")]
+            l_dum = l_dum[l_dum.find(" "):].lstrip()
+            l.append(IDWN_dum)
+            #Reach name
+            reach_name_dum=l_dum.rstrip()
+            l.append(reach_name_dum)
+
+        else:
+            l = stream_lines[stream_index].split()
 
         reach = int(l.pop(0))
 
@@ -80,12 +100,15 @@ def iwfm_read_streams(stream_file):
         elif stream_type == '4.2': 
             snodes = int(l.pop(0))
 
+        elif stream_type == '4.0':
+            snodes=int(l.pop(0))
         # streams package version 5
         # elif stream_type == '5':
         #     upper = int(l.pop(0))
         #     lower = int(l.pop(0))
         #     snodes = lower - upper + 1
 
+        #outflow node?
         oflow = int(l.pop(0))
 
         # read stream node information
