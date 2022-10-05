@@ -218,5 +218,8 @@ from iwfm.write_2_excel import write_2_excel
 # -- multiprocessing --------------------------------------
 from iwfm.multiproc import multiproc
 
+#Groundwater methods
+from iwfm.add_wells import add_wells
+
 # -- other methods -----------------------------------------
 # from iwfm.meas_bounds import meas_bounds
