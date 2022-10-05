@@ -61,7 +61,8 @@ def read_sim_wells(gw_file):
         items.append(float(line[4]))   # y
         items.append(int(line[2]))     # model layer
         items.append(line[5].lower())  # well name (state well number)
-        items.append(line[6])          # Comments
+        if len(line)>6:
+            items.append(line[6])          # Comments
         well_dict[items[0]] = items[1:]
         well_list.append(items[0])
         line_index += 1
