@@ -20,12 +20,13 @@ import pandas as pd
 import os
 import numpy as np
 import sys
+import matplotlib.pyplot as plt
 
 sys.path.insert(0, r'P:\Projects\5658_NSJWCD\IWRFM\pyemu')
 #Let's add pyemu
 import pyemu
 
-def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out,sim_period):
+def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out,sim_period,y_range):
     ''' read_sim_hyds() - Read simulated values from multiple IWFM output 
         hydrograph files into Pandas dataframe
 
@@ -99,25 +100,53 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out,sim_period):
     
     #Let's remove nans
     CASGEM_not_in_IWFM=CASGEM_not_in_IWFM[~pd.isnull(CASGEM_not_in_IWFM)]
-
-    CASGEM_not_in_IWFM=CASGEM_not_in_IWFM[~np.isin(CASGEM_not_in_IWFM, bm_omit['SWN'])]
-    CASGEM_not_in_IWFM[~np.isin(CASGEM_not_in_IWFM, lc_match['WELL_NAME'])]
+    if len(bm_omitted) > 0:
+        CASGEM_not_in_IWFM=CASGEM_not_in_IWFM[~np.isin(CASGEM_not_in_IWFM, bm_omit['SWN'])]
+    if len(low_case_match) > 0:
+        CASGEM_not_in_IWFM[~np.isin(CASGEM_not_in_IWFM, lc_match['WELL_NAME'])]
     #Let's convert dates of gwl to Pandas format
     gwl["Date"]=pd.to_datetime(gwl.MSMT_DATE.str[:-11], format="%Y/%m/%d")
 
+    #List with ranges of hydrographs
+    ranges= {}
+
     #Let's loop through wells for which we have both simulations and observations
     for well in IWFM_in_CASGEM:
-        #Let's plot hydrographs
-        ax = gwl[((gwl.SWN==well)|(gwl.WELL_NAME==well))&
+        gwl_dum=gwl[((gwl.SWN==well)|(gwl.WELL_NAME==well))&
                  (gwl.Date>=min(gwhyd_sim.Date))&
-                 (gwl.Date<=max(gwhyd_sim.Date))].plot(x='Date',
-                                                       y='WSE',
-                                                       marker='o',
-                                                       linestyle = 'None',
-                                                       title=well)
-        gwhyd_sim[gwhyd_sim.Name==well].plot(ax=ax, x='Date', y='SIM')
+                 (gwl.Date<=max(gwhyd_sim.Date))].copy()
+        gwl_dum=gwl_dum.reset_index(drop=True)
+        obs_dum=gwhyd_sim[gwhyd_sim.Name==well].copy()
+        obs_dum=obs_dum.reset_index(drop=True)
+        #Let's plot hydrographs
+        ax = gwl_dum.plot(x='Date',y='WSE',marker='o',linestyle = 'None',title=well)
+        obs_dum.plot(ax=ax, x='Date', y='SIM')
+        y_lb=int((gwl_dum.WSE.mean()-y_range/2)/5)*5
+        y_ub=y_lb+y_range
+        ax.set_ylim(y_lb,y_ub)
         fig = ax.get_figure()
         fig.savefig(os.path.join(dir_out,well+".png"))
+        fig.clear()
+
+        ranges[well]=gwl_dum.WSE.max()-gwl_dum.WSE.min()
+
+        #Boxplot
+        #now, we have to merge both dataframes into one
+        gwl_dum=gwl_dum[['Date','WSE']]
+        gwl_dum["Type"]='WSE'
+        gwl_dum=gwl_dum.rename(columns={'WSE':'head'})
+
+        obs_dum=obs_dum[["Date", "SIM"]]
+        obs_dum["Type"] = 'SIM'
+        obs_dum = obs_dum.rename(columns={"SIM": 'head'})
+
+        obs_dum = obs_dum.append(gwl_dum)
+
+        ax2=obs_dum.boxplot(by="Type",column='head')
+        plt.title(well)
+        fig2 = ax2.get_figure()
+        fig2.savefig(os.path.join(dir_out, well + "_boxplot.png"))
+        fig2.clear
 
     #Let's subset now all the observations that will be useful
     OBS=gwl[gwl.WELL_NAME.isin(IWFM_in_CASGEM)|gwl.SWN.isin(IWFM_in_CASGEM)].copy().reset_index(drop=True)
@@ -134,5 +163,5 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out,sim_period):
     OBS.loc[(OBS.SWN.isin(IWFM_in_CASGEM)) & (OBS.Name == ""), "Name"] = OBS.loc[
         (OBS.SWN.isin(IWFM_in_CASGEM)) & (OBS.Name == ""), "SWN"]
 
-    return IWFM_in_CASGEM, IWFM_not_in_CASGEM, CASGEM_not_in_IWFM, OBS
+    return IWFM_in_CASGEM, IWFM_not_in_CASGEM, CASGEM_not_in_IWFM, OBS, ranges
 

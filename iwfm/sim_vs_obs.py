@@ -63,6 +63,8 @@ def sim_vs_obs(OBS,gwhyd_sim,dir_out):
 
     #Let's also print scatter plots for each well
 
+    r2_all={}
+
     for well in OBS_SIM.Name.unique():
         OBS_SIM_dum=OBS_SIM[OBS_SIM.Name==well].copy()
         ax = OBS_SIM_dum.plot.scatter(x='WSE', y='SIM',title=well)
@@ -70,7 +72,7 @@ def sim_vs_obs(OBS,gwhyd_sim,dir_out):
 
         # Let's calculate r2
         r2 = sklearn.metrics.r2_score(OBS_SIM_dum['WSE'], OBS_SIM_dum['SIM'])
-
+        r2_all[well]=r2
         ax.text(max(max(OBS_SIM_dum.WSE), max(OBS_SIM_dum.SIM)) - 15, max(max(OBS_SIM_dum.WSE), max(OBS_SIM_dum.SIM)) - 5,
                 "r2= " + str(round(r2, 2)))
 
@@ -80,6 +82,6 @@ def sim_vs_obs(OBS,gwhyd_sim,dir_out):
         fig = ax.get_figure()
         fig.savefig(os.path.join(dir_out, "OBS_vs_SIM_"+well+".png"))
 
-    return
+    return r2_all
 
 
