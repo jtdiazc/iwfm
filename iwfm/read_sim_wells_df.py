@@ -100,7 +100,9 @@ def read_sim_wells_df(gw_file,sm_pywfm,crs=26910,
                   "X":[x_dum],
                   "Y":[y_dum],
                   "IOUTHL":[IOUTHL_dum],
-                  "Comment":[comment_dum]}
+                  "Comment":[comment_dum],
+                  "Top":[lith_dum[0]]}
+
         for i in range(nlay):
             dict_dum["L"+str(i+1)+"_bot"]=[lith_dum[i+1]]
 

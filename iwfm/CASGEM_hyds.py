@@ -26,7 +26,7 @@ sys.path.insert(0, r'P:\Projects\5658_NSJWCD\IWRFM\pyemu')
 #Let's add pyemu
 import pyemu
 
-def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out,sim_period,y_range):
+def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out,sim_period,y_range,stations_path,sm_pywfm):
     ''' read_sim_hyds() - Read simulated values from multiple IWFM output 
         hydrograph files into Pandas dataframe
 
@@ -57,6 +57,20 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out,sim_period,y_range):
 
     #Let's import gwe timeseries to pandas dataframe
     gwl = pd.read_csv(gwe_path)
+
+    stations = pd.read_csv(stations_path)
+
+    #Number of model layers
+    nlay=sm_pywfm.get_n_layers()
+
+    #Simulation dates
+    sim_start=sm_pywfm.get_time_specs()[0][0]
+    sim_end = sm_pywfm.get_time_specs()[0][-1]
+
+    #Simulation dates in Dataframe
+    sim_dates=pd.DataFrame({'Date_raw':[sim_start,sim_end]})
+    sim_dates["Date"]=sim_dates.Date_raw.str[:-6]
+    sim_dates["Date"]=pd.to_datetime(sim_dates.Date)
 
     #Let's find wells that are both in CASGEM and the IWFM model
     IWFM_in_CASGEM = wells_df.Name[wells_df.Name.isin(gwl.SWN)|(wells_df.Name.isin(gwl.WELL_NAME ))].reset_index(drop=True)
@@ -110,14 +124,86 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out,sim_period,y_range):
     #List with ranges of hydrographs
     ranges= {}
 
+    #We'll add screen information to wells df
+    wells_df["Screen_top"]=np.nan
+    wells_df["Screen_bot"] = np.nan
+
+    wells_df["IOUTHL"]=wells_df["IOUTHL"].astype(int)
+    wells_df["HYDROGRAPH ID"] = wells_df["HYDROGRAPH ID"].astype(int)
+
+
+
     #Let's loop through wells for which we have both simulations and observations
     for well in IWFM_in_CASGEM:
-        gwl_dum=gwl[((gwl.SWN==well)|(gwl.WELL_NAME==well))&
-                 (gwl.Date>=min(gwhyd_sim.Date))&
-                 (gwl.Date<=max(gwhyd_sim.Date))].copy()
-        gwl_dum=gwl_dum.reset_index(drop=True)
-        obs_dum=gwhyd_sim[gwhyd_sim.Name==well].copy()
-        obs_dum=obs_dum.reset_index(drop=True)
+        #Let's grab well information
+        station_dum=stations[(stations.WELL_NAME==well)|(stations.SWN==well)].reset_index(drop=True)
+        screen_top_dum=station_dum.loc[0,'GSE'] - station_dum.loc[0,'TOP_PRF']
+        screen_bot_dum = station_dum.loc[0, 'GSE'] - station_dum.loc[0, 'BOT_PRF']
+        well_bot_dum=station_dum.loc[0, 'GSE'] - station_dum.loc[0, 'WELL_DEPTH']
+        wells_dum=wells_df[wells_df.Name == well].reset_index(drop=True)
+        wells_df.loc[wells_df.Name == well,"Screen_top"]=screen_top_dum
+        wells_df.loc[wells_df.Name == well, "Screen_bot"] = screen_bot_dum
+        gwl_dum=gwl[(gwl.SWN==well)|(gwl.WELL_NAME==well)]
+        gwl_dum[(gwl_dum.Date >= sim_dates.loc[0, "Date"]) & (gwl_dum.Date <= sim_dates.loc[1, "Date"])].reset_index(
+            drop=True)
+        top_dum=wells_dum.Top.unique()[0]
+        #Let's retrieve which hydrographs we will need
+        IDs_dum=[]
+        #Do we have nan in screen values?
+        if (np.isnan(screen_top_dum)|np.isnan(screen_bot_dum)):
+            #In this case, we add all the layers included within the well depth
+            for i in range(nlay):
+                #If the top of the layer is above the bottom of the well, we will add the layer to the list
+                #Layer 1
+                if i==0:
+                    #Surface elevation
+                    top_lay_dum=wells_dum.loc[0,'Top']
+                    if (top_lay_dum>well_bot_dum):
+                        IDs_dum.append(wells_dum.loc[wells_dum.IOUTHL == i + 1, "HYDROGRAPH ID"].values[0])
+                else:
+                    # Top of layer
+                    top_lay_dum = wells_dum.loc[0, "L" + str(i) + "_bot"]
+                    if (top_lay_dum>well_bot_dum):
+                        IDs_dum.append(wells_dum.loc[wells_dum.IOUTHL == i + 1, "HYDROGRAPH ID"].values[0])
+
+
+        else:
+            #Let's loop through layers
+            for i in range(nlay):
+                #Bottom of the layer
+                bot_lay_dum = wells_dum.loc[0, "L" + str(i + 1) + "_bot"]
+                #Is the well screened in the layer?
+                #First we see layer one
+                if i==0:
+                    if ~(screen_top_dum<bot_lay_dum):
+                        IDs_dum.append(wells_dum.loc[wells_dum.IOUTHL==1,"HYDROGRAPH ID"].values[0])
+                #For the rest of the layers
+                else:
+                    #Top of layer
+                    top_lay_dum=wells_dum.loc[0, "L" + str(i ) + "_bot"]
+                    #Bottom of the layer
+                    bot_lay_dum=wells_dum.loc[0, "L" + str(i+1) + "_bot"]
+                    if~((screen_top_dum<bot_lay_dum)|(screen_bot_dum>top_lay_dum)):
+                        IDs_dum.append(wells_dum.loc[wells_dum.IOUTHL == i+1, "HYDROGRAPH ID"].values[0])
+
+
+        #Now, let's grab simulations for the well
+
+
+
+        sim_dum=gwhyd_sim.loc[gwhyd_sim['HYDROGRAPH ID'].isin(IDs_dum),['Date','HYDROGRAPH ID', 'LAYER','SIM']].reset_index(drop=True)
+
+        #Let's transform to wide
+        obs_dum_wide=sim_dum.pivot(index="Date",columns='LAYER',values="SIM")
+
+        #Names for wide dataframe
+        wide_names=[]
+
+        for i in range(len(IDs_dum)):
+            lay_dum=wells_dum.loc[wells_dum["HYDROGRAPH ID"]==IDs_dum[i],'IOUTHL'].values[0]
+            wide_names.append("Layer_"+str(lay_dum))
+
+
         #Let's plot hydrographs
         ax = gwl_dum.plot(x='Date',y='WSE',marker='o',linestyle = 'None',title=well)
         obs_dum.plot(ax=ax, x='Date', y='SIM')
