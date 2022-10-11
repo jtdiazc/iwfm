@@ -21,6 +21,7 @@ import os
 import numpy as np
 import sys
 import matplotlib.pyplot as plt
+import sklearn.metrics
 
 sys.path.insert(0, r'P:\Projects\5658_NSJWCD\IWRFM\pyemu')
 #Let's add pyemu
@@ -154,29 +155,50 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out,sim_period,y_range,stations_
         w=[]
         #Do we have nan in screen values?
         if (np.isnan(screen_top_dum)|np.isnan(screen_bot_dum)):
-            #In this case, we add all the layers included within the well depth
-            for i in range(nlay):
-                #Bottom of the layer
-                bot_lay_dum = wells_dum.loc[0, "L" + str(i + 1) + "_bot"]
-                #If the top of the layer is above the bottom of the well, we will add the layer to the list
-                #Layer 1
-                if i==0:
-                    #Surface elevation
-                    top_lay_dum=wells_dum.loc[0,'Top']
+            #Do we also have nan in well depth
+            if np.isnan(well_depth_dum):
+                    #In this case, we add all the layers
+
+                for i in range(nlay):
+                    # In this case, we add all the layers
                     IDs_dum.append(wells_dum.loc[wells_dum.IOUTHL == i + 1, "HYDROGRAPH ID"].values[0])
-                    #Let's add weight
-                    #Length of layer in well
-                    lay_length=min(top_dum-bot_lay_dum,top_dum-well_bot_dum)
+                    # Bottom of the layer
+                    bot_lay_dum = wells_dum.loc[0, "L" + str(i + 1) + "_bot"]
+                    if i == 0:
+                        # Surface elevation
+                        top_lay_dum = wells_dum.loc[0, 'Top']
+                    else:
+                        top_lay_dum = wells_dum.loc[0, "L" + str(i) + "_bot"]
+                    lay_length=top_lay_dum-bot_lay_dum
                     w.append(lay_length)
-                else:
-                    # Top of layer
-                    top_lay_dum = wells_dum.loc[0, "L" + str(i) + "_bot"]
-                    if (top_lay_dum>well_bot_dum):
+                # Let's normalize weights
+                Model_Depth=wells_dum.loc[0, 'Top']-bot_lay_dum
+                w=[x / (wells_dum.loc[0, 'Top']-bot_lay_dum) for x in w]
+
+            else:
+            #In this case, we add all the layers included within the well depth
+                for i in range(nlay):
+                    #Bottom of the layer
+                    bot_lay_dum = wells_dum.loc[0, "L" + str(i + 1) + "_bot"]
+                    #If the top of the layer is above the bottom of the well, we will add the layer to the list
+                    #Layer 1
+                    if i==0:
+                        #Surface elevation
+                        top_lay_dum=wells_dum.loc[0,'Top']
                         IDs_dum.append(wells_dum.loc[wells_dum.IOUTHL == i + 1, "HYDROGRAPH ID"].values[0])
-                        lay_length = min(top_lay_dum - bot_lay_dum, top_lay_dum - well_bot_dum)
+                        #Let's add weight
+                        #Length of layer in well
+                        lay_length=min(top_dum-bot_lay_dum,top_dum-well_bot_dum)
                         w.append(lay_length)
-            # Let's normalize weights
-            w = w / well_depth_dum
+                    else:
+                        # Top of layer
+                        top_lay_dum = wells_dum.loc[0, "L" + str(i) + "_bot"]
+                        if (top_lay_dum>well_bot_dum):
+                            IDs_dum.append(wells_dum.loc[wells_dum.IOUTHL == i + 1, "HYDROGRAPH ID"].values[0])
+                            lay_length = min(top_lay_dum - bot_lay_dum, top_lay_dum - well_bot_dum)
+                            w.append(lay_length)
+                # Let's normalize weights
+                w = w / well_depth_dum
 
 
         else:
@@ -278,6 +300,63 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out,sim_period,y_range,stations_
         fig = ax.get_figure()
         fig.savefig(os.path.join(dir_out,well+".png"))
         fig.clear()
+
+        # Let's remove rows with nas
+        all_wide_dum = all_wide[~all_wide['WSE'].isna()]
+        #Now, let's draw scatterplots for the layers
+        for i in range(len(IDs_dum)):
+
+            r2 = sklearn.metrics.r2_score(all_wide_dum['WSE'], all_wide_dum['Layer_'+str(i+1)])
+            #axis limits
+            lb=np.min(all_wide_dum[['WSE','Layer_'+str(i+1)]].min().values)
+            ub=np.max(all_wide_dum[['WSE','Layer_'+str(i+1)]].max().values)
+
+            #Let's turn into integers
+            lb=(round(lb/5)-1)*5
+            ub=(round(ub/5)+1)*5
+
+            ax = all_wide_dum.plot.scatter(x='WSE', y='Layer_'+str(i+1), title=well+" Layer "+str(i+1))
+            ax.axline((1, 1), slope=1, color='g')
+
+            #Let's add text
+            ax.text(ub - 5,
+                    ub- 1,
+                    "r2= " + str(round(r2, 2)))
+
+            #Let's set axis limits
+            ax.set_xlim(lb,ub)
+            ax.set_ylim(lb, ub)
+            fig = ax.get_figure()
+            fig.savefig(os.path.join(dir_out, "OBS_vs_SIM_" + well +"_Layer_"+str(i+1)+ ".png"))
+            fig.clear()
+
+        #Now, we do the same for the average
+        r2 = sklearn.metrics.r2_score(all_wide_dum['WSE'], all_wide_dum['Avg_w'])
+        # axis limits
+        lb = np.min(all_wide_dum[['WSE', 'Avg_w']].min().values)
+        ub = np.max(all_wide_dum[['WSE', 'Avg_w']].max().values)
+
+        # Let's turn into integers
+        lb = (round(lb / 5) - 1) * 5
+        ub = (round(ub / 5) + 1) * 5
+
+        ax = all_wide_dum.plot.scatter(x='WSE', y='Avg_w', title=well + ' Avg_w')
+        ax.axline((1, 1), slope=1, color='g')
+
+        # Let's add text
+        ax.text(ub - 5,
+                ub - 1,
+                "r2= " + str(round(r2, 2)))
+
+        # Let's set axis limits
+        ax.set_xlim(lb, ub)
+        ax.set_ylim(lb, ub)
+        fig = ax.get_figure()
+        fig.savefig(os.path.join(dir_out, "OBS_vs_SIM_" + well + "_Avg_w.png"))
+        fig.clear()
+
+
+
 
         #ranges[well]=gwl_dum.WSE.max()-gwl_dum.WSE.min()
 
