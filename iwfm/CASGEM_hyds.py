@@ -277,8 +277,8 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out,sim_period,y_range,stations_
         for i in range(len(IDs_dum)):
             sim_dum_wide.plot(ax=ax, x='Date', y='Layer_'+str(i+1))
 
-        #If there is more than one well, we add weighted average
-        if len(IDs_dum)>1:
+        #If there is more than one layer and less than nlay, we add weighted average
+        if (len(IDs_dum)>1) and (len(IDs_dum)<nlay):
             sim_dum_wide.plot(ax=ax, x='Date', y='Avg_w')
 
         #obs_dum.plot(ax=ax, x='Date', y='SIM')
