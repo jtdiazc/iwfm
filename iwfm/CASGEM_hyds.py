@@ -220,10 +220,11 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out,sim_period,y_range,stations_
                     top_lay_dum=wells_dum.loc[0, "L" + str(i ) + "_bot"]
                     #Bottom of the layer
                     bot_lay_dum=wells_dum.loc[0, "L" + str(i+1) + "_bot"]
+                    #If screen is in the layer
                     if~((screen_top_dum<bot_lay_dum)|(screen_bot_dum>top_lay_dum)):
                         IDs_dum.append(wells_dum.loc[wells_dum.IOUTHL == i+1, "HYDROGRAPH ID"].values[0])
                         #Let's add weight
-                        lay_length = min(screen_top_dum - bot_lay_dum, top_lay_dum - bot_lay_dum,screen_top_dum - screen_bot_dum)
+                        lay_length = min(screen_top_dum - bot_lay_dum, top_lay_dum - bot_lay_dum,screen_top_dum - screen_bot_dum,top_lay_dum - well_bot_dum)
                         w.append(lay_length)
 
             w = w / screen_length_dum
