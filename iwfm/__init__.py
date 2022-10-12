@@ -220,6 +220,7 @@ from iwfm.multiproc import multiproc
 
 #Groundwater methods
 from iwfm.add_wells import add_wells
+from iwfm.read_velocities import read_velocities
 
 # -- other methods -----------------------------------------
 # from iwfm.meas_bounds import meas_bounds
