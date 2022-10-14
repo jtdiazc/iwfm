@@ -27,7 +27,7 @@ sys.path.insert(0, r'P:\Projects\5658_NSJWCD\IWRFM\pyemu')
 #Let's add pyemu
 import pyemu
 
-def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out,sim_period,y_range,stations_path,sm_pywfm):
+def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out,sim_period,y_range,stations_path,sm_pywfm,well_reference="RPE"):
     ''' read_sim_hyds() - Read simulated values from multiple IWFM output 
         hydrograph files into Pandas dataframe
 
@@ -138,10 +138,10 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out,sim_period,y_range,stations_
     for well in IWFM_in_CASGEM:
         #Let's grab well information
         station_dum=stations[(stations.WELL_NAME==well)|(stations.SWN==well)|(stations.WELL_NAME.str.find(well)>=0)].reset_index(drop=True)
-        screen_top_dum=station_dum.loc[0,'GSE'] - station_dum.loc[0,'TOP_PRF']
-        screen_bot_dum = station_dum.loc[0, 'GSE'] - station_dum.loc[0, 'BOT_PRF']
+        screen_top_dum=station_dum.loc[0,well_reference] - station_dum.loc[0,'TOP_PRF']
+        screen_bot_dum = station_dum.loc[0, well_reference] - station_dum.loc[0, 'BOT_PRF']
         screen_length_dum=screen_top_dum-screen_bot_dum
-        well_bot_dum=station_dum.loc[0, 'GSE'] - station_dum.loc[0, 'WELL_DEPTH']
+        well_bot_dum=station_dum.loc[0, well_reference] - station_dum.loc[0, 'WELL_DEPTH']
         well_depth_dum=station_dum.loc[0, 'WELL_DEPTH']
         wells_dum=wells_df[wells_df.Name == well].reset_index(drop=True)
         wells_df.loc[wells_df.Name == well,"Screen_top"]=screen_top_dum

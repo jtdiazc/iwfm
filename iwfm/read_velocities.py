@@ -112,6 +112,3 @@ def read_velocities(velocities_path,
 #    hyd_df=hyd_df.join(wells_df.set_index('HYDROGRAPH ID'),on='HYDROGRAPH ID')
 
 
-
-
-    return hyd_df
