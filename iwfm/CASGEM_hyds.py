@@ -358,27 +358,6 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out,sim_period,y_range,stations_
 
 
 
-
-        #ranges[well]=gwl_dum.WSE.max()-gwl_dum.WSE.min()
-
-        #Boxplot
-        #now, we have to merge both dataframes into one
-        #gwl_dum=gwl_dum[['Date','WSE']]
-        #gwl_dum["Type"]='WSE'
-        #gwl_dum=gwl_dum.rename(columns={'WSE':'head'})
-
-        #obs_dum=obs_dum[["Date", "SIM"]]
-        #obs_dum["Type"] = 'SIM'
-        #obs_dum = obs_dum.rename(columns={"SIM": 'head'})
-
-        #obs_dum = obs_dum.append(gwl_dum)
-
-        #ax2=obs_dum.boxplot(by="Type",column='head')
-        #plt.title(well)
-        #fig2 = ax2.get_figure()
-        #fig2.savefig(os.path.join(dir_out, well + "_boxplot.png"))
-        #fig2.clear
-
     #Let's subset now all the observations that will be useful
     OBS=gwl[gwl.WELL_NAME.isin(IWFM_in_CASGEM)|gwl.SWN.isin(IWFM_in_CASGEM)].copy().reset_index(drop=True)
 
