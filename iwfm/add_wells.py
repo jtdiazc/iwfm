@@ -63,7 +63,7 @@ def add_wells(gw_file,
     inProj = Proj(init='epsg:'+str(epsg_in))
     outProj = Proj(init='epsg:'+str(epsg_out))
 
-    New_Wells['X'],New_Wells['Y']=transform(inProj, outProj, New_Wells['LONGITUDE'].values, New_Wells['LATITUDE'].values)
+    New_Wells['X'],New_Wells['Y']=transform(inProj, outProj, New_Wells['LONGITUDE'], New_Wells['LATITUDE'])
 
     #Let's add columns for stratigraphy
     New_Wells['top']=np.nan
