@@ -107,7 +107,7 @@ def read_sim_wells_df(gw_file,sm_pywfm,crs=26910,
             dict_dum["L"+str(i+1)+"_bot"]=[lith_dum[i+1]]
 
         wells_df_dum=pd.DataFrame(dict_dum)
-        wells_df=wells_df.append(wells_df_dum,ignore_index=True)
+        wells_df=pd.concat([wells_df,wells_df_dum],ignore_index=True)
 
 
         lines_i += 1
