@@ -277,9 +277,11 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out,sim_period,y_range,stations_
 
             #Let's prepare dates to join dataframes
 
-            sim_dum_wide.loc[:,"Year_Month"]=pd.to_datetime(sim_dum_wide.Date.dt.strftime('%Y/%m'))
+            # sim_dum_wide.loc[:,"Year_Month"]=pd.to_datetime(sim_dum_wide.Date.dt.strftime('%Y/%m'))
+            sim_dum_wide.loc[:,"Year_Month"]=sim_dum_wide.Date.dt.strftime('%Y/%m')
 
-            gwl_dum.loc[:,"Year_Month"]=pd.to_datetime(gwl_dum.Date.dt.strftime('%Y/%m'))
+            # gwl_dum.loc[:,"Year_Month"]=pd.to_datetime(gwl_dum.Date.dt.strftime('%Y/%m'))
+            gwl_dum.loc[:,"Year_Month"]=gwl_dum.Date.dt.strftime('%Y/%m')
 
             all_wide=pd.merge(sim_dum_wide, gwl_dum[["Year_Month",'WSE']], on="Year_Month", how='left')
 
