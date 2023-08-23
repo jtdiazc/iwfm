@@ -18,6 +18,7 @@
 # -----------------------------------------------------------------------------
 from pyproj import Proj, transform
 import numpy as np
+import pandas as pd
 import sys
 #Path to pywfm module
 sys.path.insert(0, r'P:\Projects\5658_NSJWCD\IWRFM\PyWFM-master\PyWFM-master\src')
@@ -120,7 +121,7 @@ def add_wells(gw_file,
             #Layer that will remain in the row we are iterating
             New_Wells.loc[i, "Layer"]=New_Wells.loc[i,"Layer"][:-1]
             #Let's add the new row ot the dataframe
-            New_Wells.append(new_row_dum,ignore_index=True)
+            New_Wells = pd.concat([New_Wells,new_row_dum],ignore_index=True)
 
     New_Wells_mini=New_Wells[['Layer','X','Y','Name']].copy()
 
@@ -174,7 +175,7 @@ def add_wells(gw_file,
         y_dum = str(round(New_Wells_mini.loc[i, 'Y'], 3))
         name_dum=New_Wells_mini.loc[i, 'Name']
         layer_dum=New_Wells_mini.loc[i, 'Layer']
-        line_dum=str(id_dum)+"\t0\t"+layer_dum+"\t"+x_dum+"\t"+y_dum+"\t\t"+name_dum+"\t\t/ Well #"+str(id_dum)+" Layer #"+layer_dum
+        line_dum=str(id_dum)+"\t0\t"+str(layer_dum)+"\t"+str(x_dum)+"\t"+str(y_dum)+"\t\t"+str(name_dum)+"\t\t/ Well #"+str(id_dum)+" Layer #"+str(layer_dum)
         lines_new.append(line_dum)
 
     for line in lines[lines_i:]:
