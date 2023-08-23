@@ -157,7 +157,7 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out,sim_period,y_range,stations_
 
         ## Skip CASGEM wells that don't have data within simulation period
         if gwl_dum.WSE.isnull().all():
-            CASGEM_outside_range = CASGEM_outside_range.append(well)
+            CASGEM_outside_range.append(well)
             continue
 
         
