@@ -114,7 +114,7 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out,sim_period,y_range,stations_
     IWFM_not_in_CASGEM=wells_df.Name[~wells_df.Name.isin(IWFM_in_CASGEM)]
 
     #Let's find wells that are in CASGEM, but not in the IWFM model
-    CASGEM_not_in_IWFM=gwl.SWN[~gwl.SWN.isin(IWFM_in_CASGEM)].dropna().append(gwl.WELL_NAME[~gwl.WELL_NAME.isin(IWFM_in_CASGEM)]).unique()
+    CASGEM_not_in_IWFM=pd.concat([gwl.SWN[~gwl.SWN.isin(IWFM_in_CASGEM)].dropna(),gwl.WELL_NAME[~gwl.WELL_NAME.isin(IWFM_in_CASGEM)]]).unique()
     
     #Let's remove nans
     CASGEM_not_in_IWFM=CASGEM_not_in_IWFM[~pd.isnull(CASGEM_not_in_IWFM)]
