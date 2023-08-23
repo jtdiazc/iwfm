@@ -123,7 +123,7 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out,sim_period,y_range,stations_
     if len(low_case_match) > 0:
         CASGEM_not_in_IWFM[~np.isin(CASGEM_not_in_IWFM, lc_match['WELL_NAME'])]
     #Let's convert dates of gwl to Pandas format
-    gwl["Date"]=pd.to_datetime(gwl.MSMT_DATE.str[:-11], format="%Y/%m/%d")
+    gwl["Date"]=pd.to_datetime(gwl.MSMT_DATE.str[:-11], format="%Y-%m-%d")
 
     #List with ranges of hydrographs
     ranges= {}
@@ -137,6 +137,8 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out,sim_period,y_range,stations_
 
     IWFM_in_CASGEM=IWFM_in_CASGEM.unique()
 
+    CASGEM_outside_range = []
+    
     #Let's loop through wells for which we have both simulations and observations
     for well in IWFM_in_CASGEM:
         #Let's grab well information
@@ -152,6 +154,13 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out,sim_period,y_range,stations_
         gwl_dum=gwl[(gwl.SWN==well)|(gwl.WELL_NAME==well)]
         gwl_dum=gwl_dum[(gwl_dum.Date >= sim_dates.loc[0, "Date"]) & (gwl_dum.Date <= sim_dates.loc[1, "Date"])].reset_index(drop=True)
         top_dum=wells_dum.Top.unique()[0]
+
+        ## Skip CASGEM wells that don't have data within simulation period
+        if gwl_dum.WSE.isnull().all():
+            CASGEM_outside_range = CASGEM_outside_range.append(well)
+            continue
+
+        
         #Let's retrieve which hydrographs we will need
         IDs_dum=[]
         #List with weights
@@ -379,5 +388,5 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out,sim_period,y_range,stations_
     OBS.loc[(OBS.SWN.isin(IWFM_in_CASGEM)) & (OBS.Name == ""), "Name"] = OBS.loc[
         (OBS.SWN.isin(IWFM_in_CASGEM)) & (OBS.Name == ""), "SWN"]
 
-    return IWFM_in_CASGEM, IWFM_not_in_CASGEM, CASGEM_not_in_IWFM, OBS, ranges
+    return IWFM_in_CASGEM, IWFM_not_in_CASGEM, CASGEM_not_in_IWFM, CASGEM_outside_range, OBS, ranges
 
