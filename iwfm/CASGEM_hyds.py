@@ -98,9 +98,12 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out,sim_period,y_range,stations_
 
     if len(low_case_match) > 0:
         # Let's retrieve the original CASGEM names
+        names_dum = pd.DataFrame({'Name': wells_df.Name.unique()})
         lc_match = pd.DataFrame()
         lc_match['WELL_NAME']=gwl.WELL_NAME[gwl.WELL_NAME.str.lower().isin(low_case_match.str.lower())].unique()
-        lc_match['IWFM']=wells_df.Name[pd.Index(wells_df.Name).str.lower().get_indexer(lc_match['WELL_NAME'].str.lower())].reset_index(drop=True)
+
+        lc_match['IWFM'] = names_dum.Name[
+            pd.Index(names_dum.Name).str.lower().get_indexer(lc_match['WELL_NAME'].str.lower())].reset_index(drop=True)
 
         # Let's loop through wells and fix names in CASGEM hydrographs data frame
         for well in low_case_match:
@@ -194,9 +197,10 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out,sim_period,y_range,stations_
                         # Top of layer
                         top_lay_dum = wells_dum.loc[0, "L" + str(i) + "_bot"]
                         if (top_lay_dum>well_bot_dum):
-                            IDs_dum.append(wells_dum.loc[wells_dum.IOUTHL == i + 1, "HYDROGRAPH ID"].values[0])
-                            lay_length = min(top_lay_dum - bot_lay_dum, top_lay_dum - well_bot_dum)
-                            w.append(lay_length)
+                            if len(wells_dum.loc[wells_dum.IOUTHL == i + 1, "HYDROGRAPH ID"].values) > 0:
+                                IDs_dum.append(wells_dum.loc[wells_dum.IOUTHL == i + 1, "HYDROGRAPH ID"].values[0])
+                                lay_length = min(top_lay_dum - bot_lay_dum, top_lay_dum - well_bot_dum)
+                                w.append(lay_length)
                 # Let's normalize weights
                 w = w / well_depth_dum
 
@@ -222,10 +226,11 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out,sim_period,y_range,stations_
                     bot_lay_dum=wells_dum.loc[0, "L" + str(i+1) + "_bot"]
                     #If screen is in the layer
                     if~((screen_top_dum<bot_lay_dum)|(screen_bot_dum>top_lay_dum)):
-                        IDs_dum.append(wells_dum.loc[wells_dum.IOUTHL == i+1, "HYDROGRAPH ID"].values[0])
-                        #Let's add weight
-                        lay_length = min(screen_top_dum - bot_lay_dum, top_lay_dum - bot_lay_dum,screen_top_dum - screen_bot_dum,top_lay_dum - well_bot_dum)
-                        w.append(lay_length)
+                        if len(wells_dum.loc[wells_dum.IOUTHL == i + 1, "HYDROGRAPH ID"].values) > 0:
+                            IDs_dum.append(wells_dum.loc[wells_dum.IOUTHL == i+1, "HYDROGRAPH ID"].values[0])
+                            #Let's add weight
+                            lay_length = min(screen_top_dum - bot_lay_dum, top_lay_dum - bot_lay_dum,screen_top_dum - screen_bot_dum,top_lay_dum - well_bot_dum)
+                            w.append(lay_length)
 
             w = w / screen_length_dum
 
@@ -253,108 +258,109 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out,sim_period,y_range,stations_
         sim_dum_wide["Date"]=sim_dum_wide.index
 
         sim_dum_wide=sim_dum_wide[["Date"] + wide_names].reset_index(drop=True)
+        if sim_dum.shape[0] > 0:
 
-        #Let's calculate weighted average
-        avg_w=sim_dum_wide.iloc[:,1]*0
-        for i in range(len(IDs_dum)):
-            avg_w=avg_w+(sim_dum_wide['Layer_'+str(i+1)]*w[i])
-        sim_dum_wide["Avg_w"]=avg_w
+            #Let's calculate weighted average
+            avg_w=sim_dum_wide.iloc[:,1]*0
+            for i in range(len(IDs_dum)):
+                avg_w=avg_w+(sim_dum_wide['Layer_'+str(i+1)]*w[i])
+            sim_dum_wide["Avg_w"]=avg_w
 
-        #Let's prepare dates to join dataframes
+            #Let's prepare dates to join dataframes
 
-        sim_dum_wide.loc[:,"Year_Month"]=pd.to_datetime(sim_dum_wide.Date.dt.strftime('%Y/%m'))
+            sim_dum_wide.loc[:,"Year_Month"]=pd.to_datetime(sim_dum_wide.Date.dt.strftime('%Y/%m'))
 
-        gwl_dum.loc[:,"Year_Month"]=pd.to_datetime(gwl_dum.Date.dt.strftime('%Y/%m'))
+            gwl_dum.loc[:,"Year_Month"]=pd.to_datetime(gwl_dum.Date.dt.strftime('%Y/%m'))
 
-        all_wide=pd.merge(sim_dum_wide, gwl_dum[["Year_Month",'WSE']], on="Year_Month", how='left')
+            all_wide=pd.merge(sim_dum_wide, gwl_dum[["Year_Month",'WSE']], on="Year_Month", how='left')
 
-        #Let's export to csv
-        all_wide.to_csv(os.path.join(dir_out,well+".csv"))
+            #Let's export to csv
+            all_wide.to_csv(os.path.join(dir_out,well+".csv"))
 
-        #Let's plot observations
+            #Let's plot observations
 
-        ax = gwl_dum.plot(x='Date',y='WSE',marker='o',linestyle = 'None',title=well)
-        #Let's plot the rest of the series
-        for i in range(len(IDs_dum)):
-            sim_dum_wide.plot(ax=ax, x='Date', y='Layer_'+str(i+1))
+            ax = gwl_dum.plot(x='Date',y='WSE',marker='o',linestyle = 'None',title=well)
+            #Let's plot the rest of the series
+            for i in range(len(IDs_dum)):
+                sim_dum_wide.plot(ax=ax, x='Date', y='Layer_'+str(i+1))
 
-        #If there is more than one layer and less than nlay, we add weighted average
-        if (len(IDs_dum)>1) and (len(IDs_dum)<nlay):
-            sim_dum_wide.plot(ax=ax, x='Date', y='Avg_w')
+            #If there is more than one layer and less than nlay, we add weighted average
+            if (len(IDs_dum)>1) and (len(IDs_dum)<nlay):
+                sim_dum_wide.plot(ax=ax, x='Date', y='Avg_w')
 
-        #obs_dum.plot(ax=ax, x='Date', y='SIM')
-        #y_lb=int((gwl_dum.WSE.mean()-y_range/2)/5)*5
-        #y_ub=y_lb+y_range
-        y_lb=-75
-        y_ub=75
-        ax.set_ylim(y_lb,y_ub)
-        #Let's set tickmarks
-        axes=ax.axes
-        year_0=sim_dates.Date.dt.year[0]
-        year_f = sim_dates.Date.dt.year[1]
-        xticks_dum=pd.date_range(start=sim_dates.Date[0], end=sim_dates.Date[1], freq='Y')
-        xlabs_dum=xticks_dum.strftime('%Y')
-        yticks_dum=list(range(-75,100,25))
-        ax.axes.set_xticks(xticks_dum)
-        ax.axes.set_yticks(yticks_dum)
-        ax.axes.set_xticklabels(xlabs_dum)
-        fig = ax.get_figure()
-        fig.savefig(os.path.join(dir_out,well+".png"))
-        fig.clear()
-
-        # Let's remove rows with nas
-        all_wide_dum = all_wide[~all_wide['WSE'].isna()]
-        #Now, let's draw scatterplots for the layers
-        for i in range(len(IDs_dum)):
-
-            r2 = sklearn.metrics.r2_score(all_wide_dum['WSE'], all_wide_dum['Layer_'+str(i+1)])
-            #axis limits
-            lb=np.min(all_wide_dum[['WSE','Layer_'+str(i+1)]].min().values)
-            ub=np.max(all_wide_dum[['WSE','Layer_'+str(i+1)]].max().values)
-
-            #Let's turn into integers
-            lb=(round(lb/5)-1)*5
-            ub=(round(ub/5)+1)*5
-
-            ax = all_wide_dum.plot.scatter(x='WSE', y='Layer_'+str(i+1), title=well+" Layer "+str(i+1))
-            ax.axline((1, 1), slope=1, color='g')
-
-            #Let's add text
-            ax.text(ub - 5,
-                    ub- 1,
-                    "r2= " + str(round(r2, 2)))
-
-            #Let's set axis limits
-            ax.set_xlim(lb,ub)
-            ax.set_ylim(lb, ub)
+            #obs_dum.plot(ax=ax, x='Date', y='SIM')
+            #y_lb=int((gwl_dum.WSE.mean()-y_range/2)/5)*5
+            #y_ub=y_lb+y_range
+            y_lb=-75
+            y_ub=75
+            ax.set_ylim(y_lb,y_ub)
+            #Let's set tickmarks
+            axes=ax.axes
+            year_0=sim_dates.Date.dt.year[0]
+            year_f = sim_dates.Date.dt.year[1]
+            xticks_dum=pd.date_range(start=sim_dates.Date[0], end=sim_dates.Date[1], freq='Y')
+            xlabs_dum=xticks_dum.strftime('%Y')
+            yticks_dum=list(range(-75,100,25))
+            ax.axes.set_xticks(xticks_dum)
+            ax.axes.set_yticks(yticks_dum)
+            ax.axes.set_xticklabels(xlabs_dum)
             fig = ax.get_figure()
-            fig.savefig(os.path.join(dir_out, "OBS_vs_SIM_" + well +"_Layer_"+str(i+1)+ ".png"))
+            fig.savefig(os.path.join(dir_out,well+".png"))
             fig.clear()
 
-        #Now, we do the same for the average
-        r2 = sklearn.metrics.r2_score(all_wide_dum['WSE'], all_wide_dum['Avg_w'])
-        # axis limits
-        lb = np.min(all_wide_dum[['WSE', 'Avg_w']].min().values)
-        ub = np.max(all_wide_dum[['WSE', 'Avg_w']].max().values)
+            # Let's remove rows with nas
+            all_wide_dum = all_wide[~all_wide['WSE'].isna()]
+            #Now, let's draw scatterplots for the layers
+            for i in range(len(IDs_dum)):
 
-        # Let's turn into integers
-        lb = (round(lb / 5) - 1) * 5
-        ub = (round(ub / 5) + 1) * 5
+                r2 = sklearn.metrics.r2_score(all_wide_dum['WSE'], all_wide_dum['Layer_'+str(i+1)])
+                #axis limits
+                lb=np.min(all_wide_dum[['WSE','Layer_'+str(i+1)]].min().values)
+                ub=np.max(all_wide_dum[['WSE','Layer_'+str(i+1)]].max().values)
 
-        ax = all_wide_dum.plot.scatter(x='WSE', y='Avg_w', title=well + ' Avg_w')
-        ax.axline((1, 1), slope=1, color='g')
+                #Let's turn into integers
+                lb=(round(lb/5)-1)*5
+                ub=(round(ub/5)+1)*5
 
-        # Let's add text
-        ax.text(ub - 5,
-                ub - 1,
-                "r2= " + str(round(r2, 2)))
+                ax = all_wide_dum.plot.scatter(x='WSE', y='Layer_'+str(i+1), title=well+" Layer "+str(i+1))
+                ax.axline((1, 1), slope=1, color='g')
 
-        # Let's set axis limits
-        ax.set_xlim(lb, ub)
-        ax.set_ylim(lb, ub)
-        fig = ax.get_figure()
-        fig.savefig(os.path.join(dir_out, "OBS_vs_SIM_" + well + "_Avg_w.png"))
-        fig.clear()
+                #Let's add text
+                ax.text(ub - 5,
+                        ub- 1,
+                        "r2= " + str(round(r2, 2)))
+
+                #Let's set axis limits
+                ax.set_xlim(lb,ub)
+                ax.set_ylim(lb, ub)
+                fig = ax.get_figure()
+                fig.savefig(os.path.join(dir_out, "OBS_vs_SIM_" + well +"_Layer_"+str(i+1)+ ".png"))
+                fig.clear()
+
+            #Now, we do the same for the average
+            r2 = sklearn.metrics.r2_score(all_wide_dum['WSE'], all_wide_dum['Avg_w'])
+            # axis limits
+            lb = np.min(all_wide_dum[['WSE', 'Avg_w']].min().values)
+            ub = np.max(all_wide_dum[['WSE', 'Avg_w']].max().values)
+
+            # Let's turn into integers
+            lb = (round(lb / 5) - 1) * 5
+            ub = (round(ub / 5) + 1) * 5
+
+            ax = all_wide_dum.plot.scatter(x='WSE', y='Avg_w', title=well + ' Avg_w')
+            ax.axline((1, 1), slope=1, color='g')
+
+            # Let's add text
+            ax.text(ub - 5,
+                    ub - 1,
+                    "r2= " + str(round(r2, 2)))
+
+            # Let's set axis limits
+            ax.set_xlim(lb, ub)
+            ax.set_ylim(lb, ub)
+            fig = ax.get_figure()
+            fig.savefig(os.path.join(dir_out, "OBS_vs_SIM_" + well + "_Avg_w.png"))
+            fig.clear()
 
 
 

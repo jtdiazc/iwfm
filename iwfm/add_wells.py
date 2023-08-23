@@ -125,7 +125,7 @@ def add_wells(gw_file,
     New_Wells_mini=New_Wells[['Layer','X','Y','Name']].copy()
 
     #Let's import wells dataframe
-    wells_df, nouth, GWHYDOUTFL, wells_gdf=iwfm.read_sim_wells_df(gw_file)
+    wells_df, nouth, GWHYDOUTFL, wells_gdf=iwfm.read_sim_wells_df(gw_file,sm_pywfm)
 
     #Let's import wells file
     lines = (open(gw_file).read().splitlines())
