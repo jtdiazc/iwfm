@@ -90,7 +90,7 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out,sim_period,y_range,stations_
         #Let's loop through wells and fix names in CASGEM hydrographs data frame
         for well in bm_omitted:
             gwl.loc[gwl.SWN==bm_omit[bm_omit.IWFM==well].SWN[0],'SWN']=bm_omit[bm_omit.IWFM==well].reset_index(drop=True).IWFM[0]
-            IWFM_in_CASGEM=IWFM_in_CASGEM.append(bm_omit[bm_omit.IWFM==well].IWFM,ignore_index=True)
+            IWFM_in_CASGEM=pd.concat([IWFM_in_CASGEM,bm_omit[bm_omit.IWFM==well].IWFM],ignore_index=True)
 
     #Let's clean by different combinations of upper and lower casing
     low_case_match=wells_df.Name[wells_df.Name.str.lower().isin(gwl.WELL_NAME.str.lower())]
@@ -108,7 +108,7 @@ def CASGEM_hyds(gwe_path,wells_df,gwhyd_sim,dir_out,sim_period,y_range,stations_
         # Let's loop through wells and fix names in CASGEM hydrographs data frame
         for well in low_case_match:
             gwl.loc[gwl.WELL_NAME == lc_match[lc_match.IWFM == well].reset_index(drop=True).WELL_NAME[0], 'WELL_NAME'] = lc_match[lc_match.IWFM == well].reset_index(drop=True).IWFM[0]
-            IWFM_in_CASGEM = IWFM_in_CASGEM.append(lc_match[lc_match.IWFM == well].IWFM, ignore_index=True)
+            IWFM_in_CASGEM = pd.concat([IWFM_in_CASGEM,lc_match[lc_match.IWFM == well].IWFM], ignore_index=True)
     # Let's find wells that are in the IWFM model, but not in CASGEM
 
     IWFM_not_in_CASGEM=wells_df.Name[~wells_df.Name.isin(IWFM_in_CASGEM)]
