@@ -38,7 +38,7 @@ setup(
             'geopandas','hist','matplotlib','moto','numpy','ogr',
             'osmnx','osr','pandas','pathlib','pillow','pngcanvas',
             'pynmea','PyPDF2','pyprog','pyshp','rasterio','reportlab','requests',
-            'rust','scipy','shapely','statistics','tabula-py','utm','xlrd',
+            'rust','scipy','shapely','sklearn','statistics','tabula-py','utm','xlrd',
             'xlsxwriter'
             # 'pymysql','Rtree','wkt','osgeo', 
             # add any additional packages that need to be installed along with your package. Eg: 'qgis'
